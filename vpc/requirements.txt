@@ -30,5 +30,5 @@ requests==2.31.0
 rich==13.5.3
 six==1.16.0
 SoftLayer==6.1.9
-urllib3==1.26.17
+urllib3==2.0.6
 wcwidth==0.2.8
