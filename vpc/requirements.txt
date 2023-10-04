@@ -5,7 +5,7 @@ ibm-platform-services==0.34.2
 ibm-secrets-manager-sdk==2.0.0
 ibm-vpc==0.17.0
 idna==3.4
-markdown-it-py==2.2.0
+markdown-it-py==3.0.0
 mdurl==0.1.2
 Pygments==2.15.1
 PyJWT==2.7.0
