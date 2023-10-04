@@ -26,4 +26,20 @@ Pretty simple, mainly used to test output stuff related to `rich` python module.
 python listVpcs.py --region <VPC Region>
 ```
 
-![Example Output](../images/listVpcsOutput.png)
+![Example output for list VPC script](../images/listVPCsOutput.png)
+
+### List all Block volumes in the region
+
+```shell
+python listBlockVoumes.py --region <VPC Region>
+```
+
+![Example Output for block volume list](../images/listAllVolumes.png)
+
+You can also use the `--show-detached` flag to only return the volumes that are not currently attached to any instances.
+
+```shell
+python listBlockVoumes.py --region <VPC Region> --show-detached
+```
+
+![Example Output for filtered block volume list](../images/listDetachedVolumes.png)
