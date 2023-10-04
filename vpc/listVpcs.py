@@ -44,7 +44,7 @@ def get_vpcs(region):
 def print_vpcs(vpcs):
     console = Console()
 
-    table = Table(show_header=True, header_style="blue", box=box.ROUNDED)  # Change header style to bold purple
+    table = Table(show_header=True, header_style="white", box=box.ROUNDED)  # Change header style to bold purple
     table.add_column("Name")
     table.add_column("ID")
     table.add_column("Subnets")

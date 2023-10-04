@@ -8,7 +8,6 @@ from rich import print
 from rich.console import Console
 from rich.table import Table
 
-
 windows_table = Table(show_header=True, header_style="green", box=box.ROUNDED)  
 linux_table = Table(show_header=True, header_style="blue", box=box.ROUNDED) 
 
@@ -89,6 +88,26 @@ for batch in nix_batches:
       if open_port:
         linux_table.add_row(str(id), str(ip), str(open_port), str(date), str(user))
 
+print("Checking ports on Windows hosts")
+# Split windows_hosts into batches 
+win_batches = [win_hosts[i:i+batch_size] for i in range(0, len(win_hosts), batch_size)]
+
+for batch in win_batches:
+
+  threads = []
+
+  for vm in batch:
+      ip = vm['public_ip']
+      open_port = check_port(ip, 3389)
+      id = vm['server_id']
+      user = vm['provision_user']
+      date = vm['provision_date']
+  
+      if open_port:
+        windows_table.add_row(str(id), str(ip), str(open_port), str(date), str(user))
+
+
 console = Console()
 
 console.print(linux_table)
+console.print(windows_table)
