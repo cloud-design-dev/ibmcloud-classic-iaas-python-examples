@@ -19,7 +19,7 @@ MarkupSafe==2.1.2
 marshmallow==3.19.0
 marshmallow-enum==1.5.1
 mccabe==0.7.0
-mdit-py-plugins==0.3.5
+mdit-py-plugins==0.4.0
 mdurl==0.1.2
 prettytable==3.9.0
 prompt-toolkit==3.0.39
