@@ -26,7 +26,7 @@ Pretty simple, mainly used to test output stuff related to `rich` python module.
 python listVpcs.py --region <VPC Region>
 ```
 
-![Example output for list VPC script](../images/listVPCsOutput.png)
+![Example output for list VPC script](../images/listVpcsOutput.png)
 
 ### List all Block volumes in the region
 
