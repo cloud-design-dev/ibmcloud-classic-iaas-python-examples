@@ -53,7 +53,7 @@ ibm-cos-sdk-core==2.13.0
 ibm-cos-sdk-s3transfer==2.13.0
 ibm-platform-services==0.44.1
 ibm-schematics==1.1.0
-ibm-vpc==0.14.0
+ibm-vpc==0.19.1
 idna==3.4
 imagesize==1.4.1
 importlib-metadata==6.0.0
