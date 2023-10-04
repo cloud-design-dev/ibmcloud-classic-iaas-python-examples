@@ -1,19 +1,34 @@
-import SoftLayer
 import json
 import socket
 import threading
 
-def check_port(ip, port, id, provision_user):
+import SoftLayer
+from rich import box
+from rich import print
+from rich.console import Console
+from rich.table import Table
+
+
+windows_table = Table(show_header=True, header_style="green", box=box.ROUNDED)  
+linux_table = Table(show_header=True, header_style="blue", box=box.ROUNDED) 
+
+linux_table.add_column("Server ID")
+linux_table.add_column("Public IP")
+linux_table.add_column("Open Port")
+linux_table.add_column("Provision Date")
+linux_table.add_column("Provisioned By")
+
+def check_port(ip, port):
 
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
   result = sock.connect_ex((ip, port))
   
   if result == 0:
-    print(f"Server {id} has open port {port} on public ip {ip}. Provisioned by {provision_user}")
+    return port
+
   return None
   sock.close()
-
 
 win_hosts = []
 nix_hosts = []
@@ -44,8 +59,7 @@ for vm in filtered_vms:
       'server_id': vm_id,
       'public_ip': public_ip,  
       'provision_date': provision_date,
-      'provision_user': provision_user,
-      'os_ref_code': os_ref_code
+      'provision_user': provision_user
     })
 
   else:
@@ -53,12 +67,10 @@ for vm in filtered_vms:
       'server_id': vm_id,
       'public_ip': public_ip,
       'provision_date': provision_date,
-      'provision_user': provision_user,
-      'os_ref_code': os_ref_code
+      'provision_user': provision_user
     })
 
 batch_size = 10
-
 print("Checking ports on Nix hosts")
 # Split nix_hosts into batches 
 nix_batches = [nix_hosts[i:i+batch_size] for i in range(0, len(nix_hosts), batch_size)]
@@ -68,40 +80,15 @@ for batch in nix_batches:
   threads = []
 
   for vm in batch:
+      ip = vm['public_ip']
+      open_port = check_port(ip, 22)
+      id = vm['server_id']
+      user = vm['provision_user']
+      date = vm['provision_date']
+  
+      if open_port:
+        linux_table.add_row(str(id), str(ip), str(open_port), str(date), str(user))
 
-    ip = vm['public_ip']
-    id = vm['server_id']
-    provision_user = vm['provision_user']
+console = Console()
 
-    t = threading.Thread(target=check_port, args=(ip, 22, id, provision_user)) 
-    threads.append(t)
-    t.start()
-
-  # Wait for all threads to complete
-  for t in threads:
-    t.join()
-
-print("Checking ports on Windows hosts")
-# Split win_hosts into batches
-win_batches = [win_hosts[i:i+batch_size] for i in range(0, len(win_hosts), batch_size)]
-
-
-
-for batch in win_batches:
-
-  threads = []
-
-for vm in win_hosts:
-
-  ip = vm['public_ip']
-  id = vm['server_id']
-  provision_user = vm['provision_user']
-  provision_date = vm['provision_date']
-
-  t = threading.Thread(target=check_port, args=(ip, 3389, id, provision_user)) 
-  threads.append(t)
-  t.start()
-
-  # Wait for all threads to complete
-  for t in threads:
-    t.join()
+console.print(linux_table)

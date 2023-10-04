@@ -1,7 +1,8 @@
-import SoftLayer
 import json
 import socket
 import threading
+
+import SoftLayer
 
 def check_port(ip, port, id, provision_user):
 
