@@ -1,5 +1,5 @@
 certifi==2023.5.7
-charset-normalizer==3.1.0
+charset-normalizer==3.3.0
 ibm-cloud-sdk-core==3.16.5
 ibm-platform-services==0.34.2
 ibm-secrets-manager-sdk==2.0.0
