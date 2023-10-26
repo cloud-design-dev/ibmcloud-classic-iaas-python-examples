@@ -31,7 +31,8 @@ def get_cases(all_cases=False):
         cases.append({
             'number': result.get('number'),
             'updated_at': result.get('updated_at'),
-            'severity': result.get('severity')
+            'severity': result.get('severity'),
+            'short_description': result.get('short_description')
         })
 
     return cases
@@ -45,7 +46,8 @@ try:
     header_mapping = {
         'number': 'Case Number',
         'updated_at': 'Last Updated',
-        'severity': 'Case Severity'
+        'severity': 'Case Severity',
+        'short_description': 'Short Description'
     }
 
     # If the `--csv` flag is specified, write the results to a CSV file, otherwise print the results to the console.

@@ -1,14 +1,17 @@
-import json
 import os
-
-from ibm_cloud_sdk_core import ApiException
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-from ibm_platform_services import GlobalTaggingV1
-from rich import box
+from ibm_cloud_sdk_core.api_exception import ApiException
+from ibm_cloud_sdk_core import GlobalTaggingV1
 from rich.console import Console
 from rich.table import Table
+from rich import box
 
 def main():
+    """
+    This function lists all the attached tags for the specified providers and tag type.
+    It uses the IBM Cloud Python SDK to authenticate and call the Global Tagging API.
+    It then prints the results in a table using the Rich library.
+    """
     console = Console()
 
     table = Table(show_header=True, header_style="white", box=box.ROUNDED)
