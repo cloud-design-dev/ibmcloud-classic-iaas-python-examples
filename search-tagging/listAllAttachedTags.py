@@ -1,7 +1,7 @@
 import os
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_cloud_sdk_core.api_exception import ApiException
-from ibm_cloud_sdk_core import GlobalTaggingV1
+from ibm_platform_services import GlobalTaggingV1
 from rich.console import Console
 from rich.table import Table
 from rich import box
