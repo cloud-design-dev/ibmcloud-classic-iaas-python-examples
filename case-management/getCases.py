@@ -1,6 +1,7 @@
 import os
 import argparse
 import csv
+import pprint
 from ibm_platform_services.case_management_v1 import *
 from ibm_cloud_sdk_core import ApiException
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
@@ -18,24 +19,11 @@ authenticator = IAMAuthenticator(
 # Use call to get all cases, and then iterate through the pages to get all results
 def get_cases(all_cases=False):
     case_management_service = CaseManagementV1(authenticator=authenticator)
-    all_results = []
-
-    pager = GetCasesPager(client=case_management_service, sort='updated_at', limit=20 if all_cases else None, status=None if all_cases else ['new', 'in_progress'])
-    while pager.has_next():
-        next_page = pager.get_next()
-        assert next_page is not None
-        all_results.extend(next_page)
-
-    cases = []
-    for result in all_results:
-        cases.append({
-            'number': result.get('number'),
-            'updated_at': result.get('updated_at'),
-            'severity': result.get('severity'),
-            'short_description': result.get('short_description')
-        })
-
-    return cases
+    case_collection = case_management_service.get_cases(sort="updated_at", 
+                                                        limit=20 if all_cases else None,
+                                                        fields=["number", "updated_at", "severity", "short_description"], 
+                                                        status=None if all_cases else ["new", "in_progress"])
+    return case_collection.result['cases']
 
 try:
     parser = argparse.ArgumentParser(description='Get support cases on IBM Account.')
@@ -55,7 +43,7 @@ try:
         filename = 'all_cases.csv' if args.all else 'open_cases.csv'
         print(f"Writing cases to {filename} CSV file in current directory")
         with open(filename, 'w', newline='') as csvfile:
-            fieldnames = [header_mapping[key] for key in ['number', 'updated_at', 'severity']]
+            fieldnames = [header_mapping[key] for key in ['number', 'updated_at', 'severity', 'short_description']]
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for case in cases:
