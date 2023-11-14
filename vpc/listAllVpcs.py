@@ -7,6 +7,7 @@ from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from rich import box
 from rich.console import Console
 from rich.table import Table
+from rich.progress import Progress, BarColumn
 
 ibmcloud_api_key = os.environ.get('IBMCLOUD_API_KEY')
 if not ibmcloud_api_key:
@@ -28,9 +29,25 @@ def get_regions():
 def get_all_vpcs():
     regions = get_regions()
     all_vpcs = []
+    total_vpcs = 0
     for region in regions:
-        vpcs = get_vpcs(region)
-        all_vpcs.extend(vpcs)
+        service = ibm_vpc.VpcV1(authenticator=authenticator)
+        service.set_service_url(f'https://{region}.iaas.cloud.ibm.com/v1')
+        vpcs = service.list_vpcs().get_result()['vpcs'] 
+        total_vpcs += len(vpcs)
+
+    print("Scanning available IBM VPC regions")
+
+    with Progress() as progress:
+
+        vpc_task = progress.add_task("Fetching VPCs...", total=total_vpcs)
+  
+        for region in regions:
+            total_vpcs += len(vpcs)
+            region_vpcs = get_vpcs(region)
+            all_vpcs.extend(region_vpcs)
+            progress.update(vpc_task, advance=len(vpcs))
+            
 
     console = Console()
 
@@ -50,6 +67,7 @@ def get_vpcs(region):
     service = ibm_vpc.VpcV1(authenticator=authenticator)
     service.set_service_url(f'https://{region}.iaas.cloud.ibm.com/v1')
     list_vpcs = service.list_vpcs().get_result()['vpcs']
+
     vpcs = []
     for vpc in list_vpcs:
         vpc_info = {'name': vpc['name'], 'id': vpc['id'], 'region': region}
@@ -67,6 +85,7 @@ def get_vpcs(region):
         vpc_info['instances'] = f"[yellow]{total_instances}[/yellow] / [green]{running_instances}[/green] / [red]{stopped_instances}[/red]"
 
         vpcs.append(vpc_info)
+
 
     return vpcs
 

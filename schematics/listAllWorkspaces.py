@@ -9,6 +9,7 @@ from ibm_platform_services import ResourceControllerV2
 from rich import box
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 ibmApiKey = os.environ.get('IBMCLOUD_API_KEY')
 if not ibmApiKey:
@@ -46,11 +47,12 @@ def target_schematics_region(region):
 def get_all_workspaces():
     regions = get_schematics_regions()
     all_workspaces = []
+    region_colors = {'eu-de': 'magenta2', 'eu-gb': 'grey84', 'us-south': 'dark_orange', 'us-east': 'dark_sea_green1'}
     for region in regions:
         client = target_schematics_region(region)
         workspaces = client.list_workspaces().get_result()['workspaces']
         for workspace in workspaces:
-            workspace['region'] = region
+            workspace['region'] = Text(region, style=region_colors.get(region, 'white'))
             name = workspace['name']
             status = workspace['status']
             created_by = workspace['created_by']
