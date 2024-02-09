@@ -15,6 +15,8 @@
 
 __author__ = 'ryantiffany'
 import os
+from rich.table import Table
+from rich.console import Console
 import argparse
 import csv
 from ibm_platform_services.case_management_v1 import *
@@ -31,12 +33,13 @@ authenticator = IAMAuthenticator(
     apikey=ibmcloud_api_key
 )
 
+
 # Use call to get all cases, and then iterate through the pages to get all results
 def get_cases(all_cases=False):
     case_management_service = CaseManagementV1(authenticator=authenticator)
     case_collection = case_management_service.get_cases(sort="updated_at", 
-                                                        limit=20 if all_cases else None,
-                                                        fields=["number", "updated_at", "severity", "short_description"], 
+                                                        limit=100 if all_cases else None,
+                                                        fields=["number", "updated_at", "severity", "short_description", 'status'], 
                                                         status=None if all_cases else ["new", "in_progress"])
     return case_collection.result['cases']
 
@@ -47,10 +50,11 @@ try:
     args = parser.parse_args() 
     cases = get_cases(all_cases=args.all)
     header_mapping = {
-        'number': 'Case Number',
-        'updated_at': 'Last Updated',
-        'severity': 'Case Severity',
-        'short_description': 'Short Description'
+    'number': 'Case Number',
+    'updated_at': 'Last Updated',
+    'severity': 'Case Severity',
+    'short_description': 'Short Description',
+    'status': 'Status'  # Add status to the header mapping
     }
 
     # If the `--csv` flag is specified, write the results to a CSV file, otherwise print the results to the console.
@@ -66,9 +70,13 @@ try:
                 writer.writerow(mapped_case)
     else:
         title = "All cases on the account" if args.all else "All open and in-progress cases on the account"
-        print(title)
+        console = Console()
+        table = Table(show_header=True, header_style="bold magenta")
+        for header in header_mapping.values():
+            table.add_column(header)
         for case in cases:
-            print(f"Number: {case['number']}, Updated At: {case['updated_at']}, Severity: {case['severity']}")
+            table.add_row(str(case['number']), str(case['updated_at']), str(case['severity']), str(case['short_description']), str(case['status']))
+        console.print(title)
+        console.print(table)
 except ApiException as e:
     print(f'Error: {e.code} - {e.message}')
-
