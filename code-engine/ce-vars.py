@@ -8,15 +8,17 @@ def pullallCeServicesVars():
         print("CE_SERVICES is not set or is empty")
     try:
         ceVarsToJson = json.loads(ceVars)
+        if isinstance(ceVarsToJson, dict):
+            allCeVars  = list(ceVarsToJson.values())
+        else:
+            allCeVars = ceVarsToJson
     except Exception as e:
         print("CE_SERVICES does not contain valid JSON. Error: " + str(e))
-    allVars  = list(ceVarsToJson.values())
-    return allVars
-
+    return allCeVars
 def pullAllVars():
-    allVars = []
+    allVars = {}
     for name, value in os.environ.items():
-        allVars.append(value)
+        allVars[name] = value
     return allVars
 
 
