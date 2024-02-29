@@ -4,9 +4,7 @@ from SoftLayer.CLI import environment
 from SoftLayer.CLI import formatting
 
 endpoint_url="https://api.softlayer.com/rest/v3.1/"
-client = SoftLayer.create_client_from_env(
-    endpoint_url=endpoint_url
-)
+client = SoftLayer.create_client_from_env(username="DSW2779714", api_key="cfeaa09c5b55473e9a93afabf91ef6d9f7afb14337bce67670111493393fde0c")
 
 def call(self, service, method, *args, **kwargs):
     """Make a SoftLayer API call.
@@ -28,8 +26,8 @@ past_invoice_object_filter = {
     "invoices":{
         "createDate":{
             "operation":"betweenDate","options":[{
-                "name":"startDate","value":["01/01/2022"]},
-                {"name":"endDate","value":["04/01/2022"]}]}}}
+                "name":"startDate","value":["02/01/2024"]},
+                {"name":"endDate","value":["02/13/2024"]}]}}}
 
 get_invoices_between = client.call('Account', 'getInvoices', filter=past_invoice_object_filter)
 pprint(get_invoices_between)
