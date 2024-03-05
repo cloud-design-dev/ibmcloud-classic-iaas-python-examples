@@ -36,28 +36,3 @@ class SMClient:
             logging.error("API exception {}.".format(str(e)))
             quit()
 
-    def get_secret_groups(self):
-        try:
-            secrets_manager_service = self.create_secrets_manager_service()
-            get_secret_groups = secrets_manager_service.list_secret_groups().get_result()['secret_groups']
-            return get_secret_groups
-        except ApiException as e:
-            logging.error("API exception {}.".format(str(e)))
-            quit()
-
-    def get_all_secrets(self):
-        try:
-            secrets_manager_service = self.create_secrets_manager_service()
-            all_results = []
-            pager = SecretsPager(
-                client=secrets_manager_service,
-                limit=50
-                )
-            while pager.has_next():
-                next_page = pager.get_next()
-                assert next_page is not None
-                all_results.extend(next_page)
-            return all_results
-        except ApiException as e:
-            logging.error("API exception {}.".format(str(e)))
-            quit()

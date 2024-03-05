@@ -19,7 +19,7 @@ if not ibmcloud_api_key:
 ibm_client = SMClient(ibmcloud_api_key)
 secrets_manager_service = ibm_client.create_secrets_manager_service()
 
-def setup_logging(default_path='logging.json', default_level=logging.info, env_key='LOG_CFG'):
+def setup_logging(default_path='../logging.json', default_level=logging.info, env_key='LOG_CFG'):
     path = default_path
     value = os.getenv(env_key, None)
     if value:

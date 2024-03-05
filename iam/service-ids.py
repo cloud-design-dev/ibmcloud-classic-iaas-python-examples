@@ -1,18 +1,33 @@
 import os
 import json
 import click
+import logging
 from pprint import pprint
 from ibm_platform_services import IamIdentityV1
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from ibm_cloud_sdk_core import ApiException
-from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from dateutil.parser import parse
+import pandas as pd
+import pytz
 
-account_id = os.environ.get('IBMCLOUD_ACCOUNT_ID')
-if not account_id:
-    raise ValueError("IBMCLOUD_ACCOUNT_ID environment variable not found")
 ibmcloud_api_key = os.environ.get('IBMCLOUD_API_KEY')
 if not ibmcloud_api_key:
     raise ValueError("IBMCLOUD_API_KEY environment variable not found")
+
+
+def setup_logging(default_path='../logging.json', default_level=logging.info, env_key='LOG_CFG'):
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = json.load(f)
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
 
 def ibm_client():  
   authenticator = IAMAuthenticator(apikey=ibmcloud_api_key)
@@ -43,8 +58,8 @@ def create_service_id(name, description):
   client = ibm_client()
   account_id = getAccountId()
   apiKeyModel = {}
-  apiKeyModel['name'] = "python-example-svc-id-api-key"
-  apiKeyModel['description'] = "Seeing if this generates an API key for the service ID"
+  apiKeyModel['name'] = name
+  apiKeyModel['description'] = description
   apiKey = apiKeyModel
   newServiceId = client.create_service_id(
     account_id=account_id,
@@ -59,8 +74,8 @@ def create_service_id(name, description):
 
 
 @cli.command()
-@click.option('--authn-value', default=0, help='Filter service IDs by authn value.')
-def list_service_id_auth(authn_value):
+@click.option('--auth_count', default=0, help='Filter service IDs by the number of authentications.')
+def list_service_id_auth(auth_count):
     client = ibm_client()
     account_id = getAccountId()
     serviceIds = client.list_service_ids(
@@ -69,7 +84,7 @@ def list_service_id_auth(authn_value):
         pagesize=100
     ).get_result().get("serviceids")
 
-    print(f"Listing Service IDs with authn value of {authn_value}:\n-----")
+    print(f"Listing Service IDs with {auth_count} authentications:\n-----")
 
     for serviceId in serviceIds:
         svcid = client.get_service_id(
@@ -79,8 +94,8 @@ def list_service_id_auth(authn_value):
         ).get_result()
 
         authentications = svcid['activity'].get('authn_count', 0)
-        if authentications == authn_value:
-            print(f"Name: {serviceId['name']}\tID: {serviceId['id']}\tAuthn: {authentications}\n")
+        if authentications == auth_count:
+            print(f"ID: {serviceId['id']}")
 
 
 @cli.command()
@@ -119,7 +134,41 @@ def get_service_id(service_id):
 
   print(serviceId)
 
+@cli.command()
+def filter_and_export_service_ids():
+    client = ibm_client()
+    account_id = getAccountId()
+    serviceIds = client.list_service_ids(
+        account_id=account_id,
+        sort="modified_at",
+        pagesize=100
+    ).get_result().get("serviceids")
 
+    filtered_serviceIds = []
+    six_months_ago = datetime.now() - relativedelta(months=6)
+
+    for serviceId in serviceIds:
+        svcid = client.get_service_id(
+            id=serviceId['id'],
+            include_activity=True,
+            include_history=True
+        ).get_result()
+
+        modified_date_str = svcid['modified_at']
+        modified_date = parse(modified_date_str).replace(tzinfo=pytz.UTC)
+        six_months_ago = datetime.now(pytz.UTC) - relativedelta(months=6)
+        authentications = svcid['activity']['authn_count']
+
+        if authentications == 0 and modified_date < six_months_ago:
+            filtered_serviceIds.append(serviceId)
+
+    print(f"Filtered Service IDs: {filtered_serviceIds}")
+
+    # Optionally, export to Excel
+    df = pd.DataFrame(filtered_serviceIds)
+    df.to_excel('filtered_service_ids.xlsx', index=False)
+
+    print("Filtered service IDs have been written to 'filtered_service_ids.xlsx'")
 
 ## TODO: Create some dummy service ids on personal account and use that to test removing un-used service ids
 @cli.command()
