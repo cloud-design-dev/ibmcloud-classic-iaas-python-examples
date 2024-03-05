@@ -57,6 +57,32 @@ def create_service_id(name, description):
   srvcId = newServiceId['id']
   return srvcId
 
+
+@cli.command()
+@click.option('--authn-value', default=0, help='Filter service IDs by authn value.')
+def list_service_id_auth(authn_value):
+    client = ibm_client()
+    account_id = getAccountId()
+    serviceIds = client.list_service_ids(
+        account_id=account_id,
+        sort="modified_at",
+        pagesize=100
+    ).get_result().get("serviceids")
+
+    print(f"Listing Service IDs with authn value of {authn_value}:\n-----")
+
+    for serviceId in serviceIds:
+        svcid = client.get_service_id(
+            id=serviceId['id'],
+            include_activity=True,
+            include_history=True
+        ).get_result()
+
+        authentications = svcid['activity'].get('authn_count', 0)
+        if authentications == authn_value:
+            print(f"Name: {serviceId['name']}\tID: {serviceId['id']}\tAuthn: {authentications}\n")
+
+
 @cli.command()
 @click.option('--prefix', default=None, help='Prefix to filter service IDs.')
 def list_service_ids(prefix):
@@ -95,9 +121,9 @@ def get_service_id(service_id):
 
 
 
-## TODO: Adjust command to pull authentication count on service ID. Need to add function to delete all service IDs with 0 authentications in the last 6 months.
+## TODO: Create some dummy service ids on personal account and use that to test removing un-used service ids
 @cli.command()
-def get_auth_count():
+def delete_unused_service_ids():
   client = ibm_client()
 
   account_id = getAccountId()
@@ -115,9 +141,14 @@ def get_auth_count():
       include_history=True
     ).get_result()
 
-    print(svcid)
     authentications = svcid['activity']['authn_count']
-    print(authentications)
+    if authentications == 0:
+      print(f"Deleting service ID: {service_id}")
+      client.delete_service_id(
+        id=service_id
+      )
+    else:
+      print(f"Service ID {service_id} has {authentications} authentications and will not be deleted.")
 
 if __name__ == '__main__':
     cli()
